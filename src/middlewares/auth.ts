@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response, RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import { UnauthorizedException } from "../exceptions/unauthorized.js";
 import { ErrorCode } from "../exceptions/root.js";
 import jwt from "jsonwebtoken";
@@ -13,7 +13,11 @@ const authMiddleware: RequestHandler = async (req, res, next) => {
     const token = authHeader.split(' ')[1]!;
     try {
         const payload = jwt.verify(token, JWT_SECRET) as unknown as { id: number };
-        (req as any).user = payload;
+        const user = await prismaClient.user.findUnique({ where: { id: payload.id } });
+        if (!user) {
+            return next(new UnauthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));
+        }
+        (req as any).user = user;
         next();
     } catch (error: any) {
         console.log("JWT Verification Error:", error.message);

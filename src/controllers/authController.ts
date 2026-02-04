@@ -1,4 +1,4 @@
-import type { NextFunction, Request, RequestHandler, Response } from "express";
+import type { RequestHandler } from "express";
 import { prismaClient } from "../config/prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -30,6 +30,7 @@ export const signup: RequestHandler = async (req, res, next) => {
         data: {
             name: data.name,
             email: data.email,
+            role: data.role,
             password: hashedPassword
         }
     });

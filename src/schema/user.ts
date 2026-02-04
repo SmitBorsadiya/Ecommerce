@@ -7,6 +7,7 @@ export const signupSchema = z.object({
     email: z.string()
         .email()
         .toLowerCase(),
+    role: z.enum(["ADMIN", "USER"]),
     password: z.string()
         .min(8, "Password must be at least 8 characters long")
         .max(50, "Password must be at most 50 characters long"),
