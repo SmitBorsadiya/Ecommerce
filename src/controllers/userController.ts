@@ -3,6 +3,8 @@ import { createAddressSchema } from "../schema/address.js";
 import { prismaClient } from "../config/prisma.js";
 import { NotFoundException } from "../exceptions/not-found.js";
 import { ErrorCode } from "../exceptions/root.js";
+import { updateUserSchema } from "../schema/user.js";
+import { BadRequestException } from "../exceptions/bad-request.js";
 
 /**
  * Create a new address
@@ -54,4 +56,54 @@ export const listAddress: RequestHandler = async (req, res) => {
         },
     });
     res.json(addresses);
+}
+
+/**
+ * Update user information
+ * @param req 
+ * @param res 
+ * @returns {Promise<void>}
+ */
+export const updateUser: RequestHandler = async (req, res) => {
+    const validated = updateUserSchema.parse(req.body);
+
+    let defaultAddress = null;
+    let billingAddress = null;
+    if (validated.defaultShippingAddress) {
+        try {
+            defaultAddress = await prismaClient.address.findFirstOrThrow({
+                where: {
+                    id: validated.defaultShippingAddress,
+                },
+            })
+        } catch (error) {
+            throw new NotFoundException("Address not found", ErrorCode.NOT_FOUND);
+        }
+        if (defaultAddress.userId !== (req as any).user.id) {
+            throw new BadRequestException("Address not found", ErrorCode.NOT_FOUND);
+        }
+    }
+
+    if (validated.defaultBillingAddress) {
+        try {
+            billingAddress = await prismaClient.address.findFirstOrThrow({
+                where: {
+                    id: validated.defaultBillingAddress
+                },
+            })
+        } catch (error) {
+            throw new NotFoundException("Address not found", ErrorCode.NOT_FOUND);
+        }
+        if (billingAddress.userId !== (req as any).user.id) {
+            throw new BadRequestException("Address not found", ErrorCode.NOT_FOUND);
+        }
+    }
+
+    const updatedUser = await prismaClient.user.update({
+        where: {
+            id: (req as any).user.id,
+        },
+        data: validated as any
+    })
+    res.json(updatedUser);
 }

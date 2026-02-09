@@ -13,9 +13,7 @@ export const createAddressSchema = z.object({
     country: z.string()
         .min(3, "Country must be at least 3 characters long")
         .max(50, "Country must be at most 50 characters long"),
-    pincode: z.number()
-        .min(6, "Pincode must be at least 6 digits")
-        .max(6, "Pincode must be at most 6 digits"),
+    pincode: z.number(),
 });
 
 export const updateAddressSchema = z.object({
@@ -36,7 +34,5 @@ export const updateAddressSchema = z.object({
         .max(50, "Country must be at most 50 characters long")
         .optional(),
     pincode: z.number()
-        .min(6, "Pincode must be at least 6 digits")
-        .max(6, "Pincode must be at most 6 digits")
         .optional(),
 });

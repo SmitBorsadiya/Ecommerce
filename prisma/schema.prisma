@@ -19,14 +19,18 @@ enum Role {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  name       String
-  email      String   @unique
-  password   String
-  role       Role     @default(USER)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  addresses  Address[]
+  id                     Int      @id @default(autoincrement())
+  name                   String
+  email                  String   @unique
+  password               String
+  role                   Role     @default(USER)
+  defaultShippingAddress Int?
+  defaultBillingAddress  Int?
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+
+  addresses Address[]
+  cartItems CartItem[]
 
   @@map("users")
 }
@@ -49,11 +53,26 @@ model Address {
 model Product {
   id          Int      @id @default(autoincrement())
   name        String
-  description String @db.Text
+  description String   @db.Text
   price       Float
   tags        String
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
+  cartItems CartItem[]
+
   @@map("products")
+}
+
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
+  productId  Int
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("cart_items")
 }

@@ -21,3 +21,9 @@ export const loginSchema = z.object({
         .min(8, "Password must be at least 8 characters long")
         .max(50, "Password must be at most 50 characters long"),
 });
+
+export const updateUserSchema = z.object({
+    name: z.string().optional(),
+    defaultBillingAddress: z.number().optional(),
+    defaultShippingAddress: z.number().optional(),
+})
