@@ -1,10 +1,11 @@
-import type { RequestHandler } from "express";
+import type { Request, Response, RequestHandler } from "express";
 import { createAddressSchema } from "../schema/address.js";
 import { prismaClient } from "../config/prisma.js";
 import { NotFoundException } from "../exceptions/not-found.js";
 import { ErrorCode } from "../exceptions/root.js";
-import { updateUserSchema } from "../schema/user.js";
+import { changeRoleSchema, updateUserSchema } from "../schema/user.js";
 import { BadRequestException } from "../exceptions/bad-request.js";
+import { UnauthorizedException } from "../exceptions/unauthorized.js";
 
 /**
  * Create a new address
@@ -106,4 +107,73 @@ export const updateUser: RequestHandler = async (req, res) => {
         data: validated as any
     })
     res.json(updatedUser);
+}
+
+/**
+ * List all users
+ * @param req 
+ * @param res 
+ * @returns {Promise<void>}
+ */
+export const listUser: RequestHandler = async (req, res) => {
+    const users = await prismaClient.user.findMany({
+        skip: Number(req.query.skip),
+        take: 10,
+    });
+    res.json(users);
+}
+
+/**
+ * Get a user by ID
+ * @param req 
+ * @param res 
+ * @returns {Promise<void>}
+ */
+export const getUser: RequestHandler = async (req, res) => {
+    try {
+        const user = await prismaClient.user.findFirstOrThrow({
+            where: {
+                id: Number(req.params.id),
+            },
+            include: {
+                addresses: true
+            }
+        });
+        res.json(user);
+    } catch (error) {
+        throw new NotFoundException("User not found", ErrorCode.NOT_FOUND);
+    }
+}
+
+/**
+ * Change user role
+ * @param req 
+ * @param res 
+ * @returns {Promise<void>}
+ */
+export const changeRole: RequestHandler = async (req: Request, res: Response) => {
+    try {
+        const user = await prismaClient.user.findFirstOrThrow({
+            where: {
+                id: Number(req.user.id),
+            },
+        });
+
+        if (user.role !== "ADMIN") {
+            throw new UnauthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED);
+        }
+
+        const validated = changeRoleSchema.parse(req.body);
+        await prismaClient.user.update({
+            where: {
+                id: Number(req.params.id),
+            },
+            data: {
+                role: validated.role,
+            }
+        });
+        res.json({ message: "Role changed successfully" });
+    } catch (error) {
+        throw new NotFoundException("User not found", ErrorCode.NOT_FOUND);
+    }
 }
