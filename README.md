@@ -1,6 +1,6 @@
 # 🛒 Ecommerce API
 
-A full-featured **RESTful E-Commerce API** built with **Node.js**, **Express 5**, **TypeScript**, and **Prisma ORM**. It provides complete backend functionality for an online store — including user authentication, product management, shopping cart, order processing, and admin controls.
+A full-featured **RESTful E-Commerce API** built with **Node.js**, **Express**, **TypeScript**, and **Prisma ORM**. It provides complete backend functionality for an online store - including user authentication, product management, shopping cart, order processing, and admin controls.
 
 ---
 
@@ -436,33 +436,6 @@ Zod validation errors are automatically caught and returned as `400 Bad Request`
   ```bash
   npx kill-port 3000
   ```
-
----
-
-## 🤝 Contributing Guidelines
-
-Contributions are welcome! Please follow these steps:
-
-1. **Fork** the repository.
-2. **Create a feature branch**: `git checkout -b feature/your-feature-name`
-3. **Follow the existing code style** — TypeScript with ESM modules, Zod validation for all inputs.
-4. **Write clean, documented code** — use JSDoc comments on controller functions.
-5. **Test your changes** manually before submitting.
-6. **Commit with clear messages**: `git commit -m "feat: add product reviews endpoint"`
-7. **Push and open a Pull Request** against the `main` branch.
-
-### Code Style
-
-- Use **ES Modules** (`import`/`export`) — not CommonJS.
-- Validate all request bodies with **Zod schemas** in the `src/schema/` directory.
-- Wrap route handlers with `errorHandler()` for consistent error handling.
-- Use the custom exception classes in `src/exceptions/` — do not throw plain `Error` objects.
-
----
-
-## 📄 License
-
-This project is licensed under the **ISC License**. See the `package.json` for details.
 
 ---
 
