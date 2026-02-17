@@ -71,6 +71,8 @@ model Product {
   cartItems CartItem[]
   orders    OrderProduct[]
 
+  @@fulltext([name, description, tags])
+
   @@map("products")
 }
 

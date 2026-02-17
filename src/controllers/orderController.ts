@@ -1,5 +1,7 @@
 import type { Request, Response, RequestHandler } from "express";
 import { prismaClient } from "../config/prisma.js";
+import { NotFoundException } from "../exceptions/not-found.js";
+import { ErrorCode } from "../exceptions/root.js";
 
 /**
  * Create order
@@ -150,5 +152,87 @@ export const getOrder: RequestHandler = async (req: Request, res: Response) => {
         return res.json(order)
     } catch (error) {
         return res.json({ message: "Order not found" })
+    }
+}
+
+/**
+ * List all orders
+ * @param req 
+ * @param res 
+ * @returns 
+ */
+export const listAllOrders: RequestHandler = async (req: Request, res: Response) => {
+    let condition = {};
+    const status = req.params.staus;
+    if (status) {
+        condition = { status };
+    }
+
+    const orders = await prismaClient.order.findMany({
+        where: condition,
+        skip: Number(req.params.skip) || 0,
+        take: 5
+    })
+
+    return res.json(orders)
+}
+
+/**
+ * List user orders
+ * @param req 
+ * @param res 
+ * @returns 
+ */
+export const listUserOrders: RequestHandler = async (req: Request, res: Response) => {
+    let condition: any = {
+        userId: Number(req.params.id)
+    }
+
+    const status = req.query.status;
+    if (status) {
+        condition = {
+            ...condition,
+            status
+        }
+    }
+
+    const orders = await prismaClient.order.findMany({
+        where: condition,
+        skip: Number(req.params.skip) || 0,
+        take: 5
+    })
+
+    return res.json(orders)
+}
+
+/**
+ * Change order status
+ * @param req 
+ * @param res 
+ * @returns
+ */
+export const changeStatus: RequestHandler = async (req: Request, res: Response) => {
+    try {
+        await prismaClient.$transaction(async (tx) => {
+            const order = await tx.order.update({
+                where: {
+                    id: Number(req.params.id)
+                },
+                data: {
+                    status: req.body.status
+                }
+            })
+
+            await tx.orderEvent.create({
+                data: {
+                    orderId: order.id,
+                    status: req.body.status
+                }
+            })
+        })
+
+        return res.json({ message: "Order status changed successfully" })
+    } catch (error) {
+        throw new NotFoundException('Order not found', ErrorCode.NOT_FOUND);
     }
 }

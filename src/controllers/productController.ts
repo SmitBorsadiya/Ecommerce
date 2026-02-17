@@ -1,4 +1,4 @@
-import type { RequestHandler } from "express";
+import type { Request, Response, RequestHandler } from "express";
 import { createProductSchema, updateProductSchema } from "../schema/product.js";
 import { prismaClient } from "../config/prisma.js";
 import type { Prisma } from "@prisma/client/extension";
@@ -116,4 +116,29 @@ export const deleteProduct: RequestHandler = async (req, res, next) => {
     } catch (error) {
         throw new NotFoundException("Product not found", ErrorCode.NOT_FOUND);
     }
+}
+
+/**
+ * Search product
+ * @param req 
+ * @param res 
+ * @returns {Promise<Response>}
+ */
+export const searchProduct: RequestHandler = async (req: Request, res: Response) => {
+    const products = await prismaClient.product.findMany({
+        where: {
+            name: {
+                search: req.query.q as string
+            },
+            description: {
+                search: req.query.q as string
+            },
+            tags: {
+                search: req.query.q as string
+            }
+
+        }
+    });
+
+    res.status(200).json({ message: "Products fetched successfully", products });
 }
